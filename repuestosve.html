@@ -1,0 +1,509 @@
+<title>RepuestosVE</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..100,400..800&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com/3.4.17"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          ground: 'var(--ground)', surface: 'var(--surface)', soft: 'var(--soft)', ink: 'var(--ink)',
+          muted: 'var(--muted)', line: 'var(--line)', frame: 'var(--frame)', frameink: 'var(--frame-ink)',
+          navy: 'var(--navy)', navyink: 'var(--navy-ink)', link: 'var(--link)', ok: 'var(--ok)'
+        },
+        fontFamily: { sans: ['Archivo', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'sans-serif'] }
+      }
+    }
+  }
+</script>
+<style>
+  /* Layout: a yellow frame (top bar) holds the brand and search; the work sits on white sheets
+     over a #ebebeb ground, one 1px edge, no shadow at rest. Colour lives on prices, state and the one action. */
+  :root {
+    --ground: #ebebeb;
+    --surface: #ffffff;
+    --soft: #f5f5f3;
+    --ink: #1c1f24;
+    --muted: #63676e;
+    --line: #e0e0de;
+    --frame: #ffd83d;
+    --frame-ink: #1c1f24;
+    --navy: #13305c;
+    --navy-ink: #ffffff;
+    --hero: #13305c; --hero-ink: #ffffff;
+    --link: #1d5fbf;
+    --ok: #0f8a4a;
+    --drawing: #8a8f97;
+    --rep-1: #e5484d; --rep-2: #f08c2e; --rep-3: #e8c21f; --rep-4: #9ac43a; --rep-5: #2ea44f;
+    --rep-off: #e6e6e4;
+    --font: 'Archivo', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #121417; --surface: #1c1f23; --soft: #24282d; --ink: #eceef0; --muted: #a2a7ae;
+      --line: #2e3238; --frame: #f2cc3a; --frame-ink: #17191c; --navy: #6f9de8; --navy-ink: #0f1520; --hero: #1b3560; --hero-ink: #ffffff;
+      --link: #79a9f2; --ok: #4cc782; --drawing: #868c95; --rep-off: #33373d; color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #121417; --surface: #1c1f23; --soft: #24282d; --ink: #eceef0; --muted: #a2a7ae;
+    --line: #2e3238; --frame: #f2cc3a; --frame-ink: #17191c; --navy: #6f9de8; --navy-ink: #0f1520; --hero: #1b3560; --hero-ink: #ffffff;
+    --link: #79a9f2; --ok: #4cc782; --drawing: #868c95; --rep-off: #33373d; color-scheme: dark;
+  }
+  [hidden] { display: none !important; }
+  body { background: var(--ground); color: var(--ink); font-family: var(--font); font-size: 15px; }
+  .gutter { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  .wrap { max-width: 1200px; margin-inline: auto; }
+  .sheet { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; }
+  h1, h2, h3 { text-wrap: balance; }
+  .num { font-variant-numeric: tabular-nums; }
+  :focus-visible { outline: 2px solid var(--link); outline-offset: 2px; }
+  .card { transition: box-shadow .18s ease, transform .18s ease; }
+  .card:hover { box-shadow: 0 6px 20px rgba(0,0,0,.10); }
+  .btn-press:active { transform: translateY(1px); }
+  .drawing { color: var(--drawing); }
+  .rep span { height: 6px; flex: 1; border-radius: 2px; background: var(--rep-off); }
+  .slide { display: none; }
+  .slide.is-on { display: grid; }
+  select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%2363676e' stroke-width='1.6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; }
+  #toast { bottom: calc(16px + env(safe-area-inset-bottom, 0px)); }
+  @media (prefers-reduced-motion: reduce) { .card, .btn-press, #toast { transition: none !important; } }
+</style>
+
+<!-- Frame: the yellow top bar -->
+<header class="bg-frame text-frameink gutter sticky z-30" style="top: env(safe-area-inset-top, 0px)">
+  <div class="wrap flex flex-wrap items-center gap-x-6 gap-y-3 py-3">
+    <a href="#" class="flex items-center gap-2 shrink-0" aria-label="RepuestosVE, inicio">
+      <svg width="34" height="34" viewBox="0 0 34 34" aria-hidden="true">
+        <circle cx="17" cy="17" r="16" fill="var(--navy)"/>
+        <circle cx="17" cy="17" r="9" fill="none" stroke="var(--frame)" stroke-width="3"/>
+        <circle cx="17" cy="17" r="3" fill="var(--frame)"/>
+        <g stroke="var(--frame)" stroke-width="3" stroke-linecap="round">
+          <path d="M17 3.5v4M17 26.5v4M3.5 17h4M26.5 17h4"/>
+        </g>
+      </svg>
+      <span class="text-[22px] font-extrabold tracking-tight" style="font-stretch: 85%">Repuestos<span class="text-navy">VE</span></span>
+    </a>
+
+    <form id="searchForm" role="search" class="order-3 w-full md:order-none md:w-auto md:flex-1 flex">
+      <label for="q" class="sr-only">Buscar repuestos</label>
+      <input id="q" type="search" autocomplete="off"
+        placeholder="Busca por repuesto, marca o modelo. Ej.: correa de tiempo Orinoco"
+        class="w-full h-11 rounded-l-md bg-surface text-ink px-4 text-[15px] placeholder:text-muted outline-none border border-transparent focus:border-navy">
+      <button class="btn-press h-11 px-4 rounded-r-md bg-surface text-muted border-l border-line hover:text-ink" aria-label="Buscar">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      </button>
+    </form>
+
+    <nav class="ml-auto md:ml-0 flex items-center gap-1 sm:gap-2 text-[14px]" aria-label="Cuenta">
+      <button data-toast="Registro simulado: aquí se abriría el formulario para crear tu cuenta." class="btn-press px-2 sm:px-3 py-2 rounded-md hover:bg-[rgba(0,0,0,.06)]">Crear cuenta</button>
+      <button data-toast="Inicio de sesión simulado: aquí ingresarías con tu correo o teléfono." class="btn-press px-2 sm:px-3 py-2 rounded-md hover:bg-[rgba(0,0,0,.06)]">Ingresar</button>
+      <button data-toast="¡Vamos a publicar! Aquí empezaría el formulario para vender tu repuesto." class="btn-press ml-1 px-4 py-2 rounded-md bg-navy text-navyink font-semibold hover:opacity-90">Vender</button>
+    </nav>
+  </div>
+</header>
+
+<main class="gutter pb-16">
+  <div class="wrap flex flex-col gap-5 pt-5">
+
+    <!-- Categories -->
+    <section class="sheet px-3 py-3" aria-labelledby="catTitle">
+      <h2 id="catTitle" class="sr-only">Categorías</h2>
+      <div id="cats" class="flex gap-1 overflow-x-auto" role="toolbar" aria-label="Filtrar por categoría"></div>
+    </section>
+
+    <!-- Hero: shipping carousel -->
+    <section class="relative overflow-hidden rounded-xl text-[color:var(--hero-ink)]" style="background: var(--hero)" aria-roledescription="carrusel" aria-label="Promociones">
+      <div id="slides">
+        <!-- slide 1: shipping -->
+        <div class="slide is-on md:grid-cols-[1.1fr_1fr] gap-6 items-center px-6 sm:px-10 py-8 sm:py-10" aria-roledescription="diapositiva" aria-label="1 de 3">
+          <div class="flex flex-col gap-4 max-w-[30rem]">
+            <h1 class="text-[28px] sm:text-[34px] leading-[1.02] font-extrabold tracking-tight" style="font-stretch: 85%">Envíos a toda Venezuela</h1>
+            <p class="text-[16px] leading-relaxed opacity-90">Los vendedores despachan por MRW, Zoom o Tealca. Pagas el envío al retirar en la agencia o lo acuerdas con el vendedor.</p>
+            <div class="flex flex-wrap gap-2 text-[14px] font-semibold">
+              <span class="px-3 py-1.5 rounded-md bg-surface text-ink">MRW</span>
+              <span class="px-3 py-1.5 rounded-md bg-surface text-ink">Zoom</span>
+              <span class="px-3 py-1.5 rounded-md bg-surface text-ink">Tealca</span>
+            </div>
+          </div>
+          <!-- route drawn through the cities on the listings -->
+          <svg viewBox="0 0 420 220" class="w-full max-w-[460px] justify-self-end" role="img" aria-label="Ruta de envío Maracaibo, Barquisimeto, Valencia, Maracay, Caracas, Puerto Ordaz">
+            <path d="M40 70 C 90 60, 110 120, 150 118 S 205 100, 225 110 S 262 98, 280 96 S 330 120, 380 160"
+              fill="none" stroke="var(--frame)" stroke-width="3" stroke-dasharray="2 9" stroke-linecap="round"/>
+            <g fill="var(--hero-ink)" font-family="Archivo, sans-serif" font-size="13">
+              <circle cx="40" cy="70" r="6" fill="var(--frame)"/><text x="28" y="52">Maracaibo</text>
+              <circle cx="150" cy="118" r="5"/><text x="108" y="146">Barquisimeto</text>
+              <circle cx="225" cy="110" r="5"/><text x="198" y="90">Valencia</text>
+              <circle cx="255" cy="104" r="4"/><text x="236" y="134">Maracay</text>
+              <circle cx="290" cy="96" r="6" fill="var(--frame)"/><text x="292" y="80">Caracas</text>
+              <circle cx="380" cy="160" r="5"/><text x="318" y="190">Puerto Ordaz</text>
+            </g>
+          </svg>
+        </div>
+        <!-- slide 2: payments -->
+        <div class="slide md:grid-cols-[1.1fr_1fr] gap-6 items-center px-6 sm:px-10 py-8 sm:py-10" aria-roledescription="diapositiva" aria-label="2 de 3">
+          <div class="flex flex-col gap-4 max-w-[30rem]">
+            <h2 class="text-[28px] sm:text-[34px] leading-[1.02] font-extrabold tracking-tight" style="font-stretch: 85%">Paga como prefieras</h2>
+            <p class="text-[16px] leading-relaxed opacity-90">Cada vendedor indica en su publicación qué métodos acepta. Los precios se publican en dólares, con su referencia en bolívares.</p>
+          </div>
+          <ul class="grid grid-cols-2 gap-2 text-[15px] font-semibold max-w-[420px] w-full justify-self-end" id="payHero"></ul>
+        </div>
+        <!-- slide 3: sell -->
+        <div class="slide md:grid-cols-[1.1fr_1fr] gap-6 items-center px-6 sm:px-10 py-8 sm:py-10" aria-roledescription="diapositiva" aria-label="3 de 3">
+          <div class="flex flex-col gap-4 max-w-[30rem]">
+            <h2 class="text-[28px] sm:text-[34px] leading-[1.02] font-extrabold tracking-tight" style="font-stretch: 85%">Vende tus repuestos</h2>
+            <p class="text-[16px] leading-relaxed opacity-90">Publica gratis con fotos, el modelo y los años compatibles. Te escriben compradores de tu ciudad y del resto del país.</p>
+            <div><button data-toast="¡Vamos a publicar! Aquí empezaría el formulario para vender tu repuesto." class="btn-press px-5 py-3 rounded-md bg-frame text-frameink font-bold hover:opacity-90">Publicar mi repuesto</button></div>
+          </div>
+          <ol class="flex flex-col gap-3 text-[15px] max-w-[420px] w-full justify-self-end">
+            <li class="flex gap-3 items-baseline"><b class="text-frame text-[20px] num">1</b> Toma fotos del repuesto y de su número de parte</li>
+            <li class="flex gap-3 items-baseline"><b class="text-frame text-[20px] num">2</b> Indica marca, modelo y años compatibles</li>
+            <li class="flex gap-3 items-baseline"><b class="text-frame text-[20px] num">3</b> Elige cómo cobras y cómo envías</li>
+          </ol>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 px-6 sm:px-10 pb-5">
+        <button id="prev" class="btn-press w-9 h-9 rounded-full bg-surface text-ink grid place-items-center" aria-label="Anterior">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
+        </button>
+        <button id="next" class="btn-press w-9 h-9 rounded-full bg-surface text-ink grid place-items-center" aria-label="Siguiente">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+        </button>
+        <div id="dots" class="flex gap-1.5 ml-2"></div>
+      </div>
+    </section>
+
+    <!-- Vehicle finder -->
+    <section class="sheet px-5 sm:px-6 py-5" aria-labelledby="finderTitle">
+      <div class="flex flex-wrap items-baseline justify-between gap-2 mb-4">
+        <h2 id="finderTitle" class="text-[20px] font-bold">Descubre repuestos para tu vehículo</h2>
+        <p class="text-[14px] text-muted">Elige marca, modelo y año y te mostramos solo lo compatible.</p>
+      </div>
+      <form id="finder" class="grid grid-cols-1 sm:grid-cols-[1fr_1fr_1fr_auto] gap-3">
+        <div class="flex flex-col gap-1 min-w-0">
+          <label for="brand" class="text-[13px] text-muted">Marca</label>
+          <select id="brand" class="h-11 rounded-md border border-line bg-surface text-ink px-3 pr-9"></select>
+        </div>
+        <div class="flex flex-col gap-1 min-w-0">
+          <label for="model" class="text-[13px] text-muted">Modelo</label>
+          <select id="model" class="h-11 rounded-md border border-line bg-surface text-ink px-3 pr-9 disabled:opacity-50" disabled></select>
+        </div>
+        <div class="flex flex-col gap-1 min-w-0">
+          <label for="year" class="text-[13px] text-muted">Año</label>
+          <select id="year" class="h-11 rounded-md border border-line bg-surface text-ink px-3 pr-9 disabled:opacity-50" disabled></select>
+        </div>
+        <div class="flex items-end gap-2">
+          <button class="btn-press h-11 px-6 rounded-md bg-navy text-navyink font-semibold w-full sm:w-auto hover:opacity-90">Buscar</button>
+          <button type="button" id="finderReset" class="h-11 px-3 rounded-md text-link hover:underline" hidden>Limpiar</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- Listings -->
+    <section aria-labelledby="gridTitle" class="flex flex-col gap-3">
+      <div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 px-1">
+        <h2 id="gridTitle" class="text-[22px] font-bold">Publicaciones destacadas</h2>
+        <p class="text-[13px] text-muted num" id="rateNote"></p>
+      </div>
+      <p id="filterLine" class="px-1 text-[14px] text-muted" aria-live="polite"></p>
+      <div id="grid" class="grid grid-cols-1 min-[560px]:grid-cols-2 lg:grid-cols-4 gap-3"></div>
+      <div id="empty" class="sheet px-6 py-10 text-center flex flex-col items-center gap-3" hidden>
+        <p class="text-[17px] font-semibold">No hay publicaciones con esos filtros</p>
+        <p class="text-[14px] text-muted max-w-[28rem]">Prueba con otro año o quita la categoría. También puedes crear una alerta y te avisamos cuando alguien publique ese repuesto.</p>
+        <div class="flex gap-2">
+          <button id="clearAll" class="btn-press px-4 py-2 rounded-md bg-navy text-navyink font-semibold">Quitar filtros</button>
+          <button data-toast="Alerta creada (simulada): te avisaríamos por correo cuando aparezca." class="btn-press px-4 py-2 rounded-md border border-line text-link">Crear alerta</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Payments strip -->
+    <section class="sheet px-5 sm:px-6 py-5 grid md:grid-cols-[auto_1fr] gap-4 md:gap-8 items-center" aria-labelledby="payTitle">
+      <div>
+        <h2 id="payTitle" class="text-[18px] font-bold">Métodos de pago aceptados</h2>
+        <p class="text-[14px] text-muted">Acuerdas el pago directamente con el vendedor.</p>
+      </div>
+      <ul id="payStrip" class="flex flex-wrap gap-2"></ul>
+    </section>
+  </div>
+</main>
+
+<footer class="bg-surface border-t border-line gutter">
+  <div class="wrap py-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-4 text-[14px]">
+    <div class="flex flex-col gap-2">
+      <p class="text-[20px] font-extrabold tracking-tight" style="font-stretch: 85%">Repuestos<span class="text-navy">VE</span></p>
+      <p class="text-muted leading-relaxed">Compra y venta de repuestos para los carros que ruedan en Venezuela.</p>
+    </div>
+    <div class="flex flex-col gap-2">
+      <h3 class="font-semibold">Atención al cliente</h3>
+      <a href="#" class="text-link hover:underline">Centro de ayuda</a>
+      <a href="#" class="text-link hover:underline">Cómo comprar seguro</a>
+      <a href="#" class="text-link hover:underline">Reclamos y devoluciones</a>
+      <p class="text-muted">WhatsApp: <span class="select-all num text-ink">+58 412 000 0000</span></p>
+      <p class="text-muted">Lunes a sábado, 8:00 a 18:00</p>
+    </div>
+    <div class="flex flex-col gap-2">
+      <h3 class="font-semibold">Legal</h3>
+      <a href="#" class="text-link hover:underline">Términos y condiciones</a>
+      <a href="#" class="text-link hover:underline">Política de privacidad</a>
+      <a href="#" class="text-link hover:underline">Publicaciones prohibidas</a>
+    </div>
+    <div class="flex flex-col gap-2">
+      <h3 class="font-semibold">Pagos y envíos</h3>
+      <p class="text-muted leading-relaxed" id="payFooter"></p>
+      <p class="text-muted">Envíos por MRW, Zoom y Tealca.</p>
+    </div>
+  </div>
+  <div class="wrap pb-8 text-[13px] text-muted">© 2026 RepuestosVE · Prototipo con datos de ejemplo.</div>
+</footer>
+
+<div id="toast" role="status" aria-live="polite"
+  class="fixed left-1/2 -translate-x-1/2 z-50 max-w-[min(92vw,460px)] px-4 py-3 rounded-lg bg-ink text-ground text-[14px] shadow-lg opacity-0 pointer-events-none transition-all duration-200 translate-y-2"></div>
+
+<script>
+// ---- Mock data -------------------------------------------------------------
+const RATE = 218.45;            // Bs. por US$, tasa referencial simulada
+const RATE_DATE = '23/10/2026';
+
+const PAYMENTS = ['Pago Móvil', 'Zelle', 'Efectivo', 'Transferencia nacional', 'Binance'];
+
+const VEHICLES = {
+  Chevrolet: { Aveo: [2004, 2017], Optra: [2006, 2012], Spark: [2005, 2014] },
+  Toyota:    { Corolla: [2003, 2019], Hilux: [2005, 2020], Yaris: [2006, 2016] },
+  Ford:      { Fiesta: [2004, 2014], Explorer: [2006, 2015], Ka: [2003, 2008] },
+  Chery:     { Orinoco: [2011, 2016], Arauca: [2012, 2016], Tiggo: [2010, 2016] },
+  Mitsubishi:{ Lancer: [2003, 2015], Montero: [2003, 2012] }
+};
+
+const CATEGORIES = [
+  { id: 'motor', label: 'Motor' },
+  { id: 'suspension', label: 'Suspensión' },
+  { id: 'frenos', label: 'Frenos' },
+  { id: 'electrico', label: 'Sistema eléctrico' },
+  { id: 'accesorios', label: 'Accesorios' },
+  { id: 'carroceria', label: 'Carrocería' }
+];
+
+// fits: [marca, modelo, desde, hasta]; rep: 1 (rojo) a 5 (verde)
+const LISTINGS = [
+  { id: 1, title: 'Bomba de gasolina Chevrolet Aveo 1.6 con flotante', usd: 48, cond: 'Nuevo', city: 'Caracas', rep: 5, sold: 214, cat: 'motor', art: 'pump', fits: ['Chevrolet', 'Aveo', 2005, 2017], ship: 'MRW' },
+  { id: 2, title: 'Amortiguadores delanteros Toyota Corolla (par)', usd: 95, cond: 'Nuevo', city: 'Valencia', rep: 4, sold: 87, cat: 'suspension', art: 'shock', fits: ['Toyota', 'Corolla', 2009, 2014], ship: 'Zoom' },
+  { id: 3, title: 'Pastillas de freno delanteras Ford Fiesta Power y Max', usd: 18.5, cond: 'Nuevo', city: 'Barquisimeto', rep: 5, sold: 402, cat: 'frenos', art: 'pads', fits: ['Ford', 'Fiesta', 2004, 2014], ship: 'MRW' },
+  { id: 4, title: 'Kit correa de tiempo Chery Orinoco 1.8 con tensor', usd: 62, cond: 'Nuevo', city: 'Maracaibo', rep: 3, sold: 41, cat: 'motor', art: 'belt', fits: ['Chery', 'Orinoco', 2011, 2016], ship: 'Tealca' },
+  { id: 5, title: 'Alternador Toyota Hilux 2.7 probado en banco', usd: 140, cond: 'Usado', city: 'Puerto Ordaz', rep: 4, sold: 19, cat: 'electrico', art: 'alternator', fits: ['Toyota', 'Hilux', 2005, 2015], ship: 'Zoom' },
+  { id: 6, title: 'Radiador Chevrolet Optra 1.8 sincrónico', usd: 85, cond: 'Nuevo', city: 'Maracay', rep: 2, sold: 8, cat: 'motor', art: 'radiator', fits: ['Chevrolet', 'Optra', 2006, 2012], ship: 'MRW' },
+  { id: 7, title: 'Faro delantero izquierdo Ford Explorer', usd: 70, cond: 'Usado', city: 'Caracas', rep: 5, sold: 63, cat: 'carroceria', art: 'headlight', fits: ['Ford', 'Explorer', 2006, 2010], ship: 'Tealca' },
+  { id: 8, title: 'Bobina de encendido Mitsubishi Lancer 2.0', usd: 35, cond: 'Nuevo', city: 'Valencia', rep: 4, sold: 128, cat: 'electrico', art: 'coil', fits: ['Mitsubishi', 'Lancer', 2008, 2015], ship: 'Zoom' }
+];
+console.assert(LISTINGS.every(l => VEHICLES[l.fits[0]] && VEHICLES[l.fits[0]][l.fits[1]]), 'Cada publicación usa un vehículo del selector');
+
+// ---- Drawings (flat line art, one language) --------------------------------
+const S = 'fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"';
+const ART = {
+  pump: `<rect x="44" y="30" width="32" height="62" rx="6" ${S}/><path d="M44 46h32M44 76h32M60 30V16h18" ${S}/><circle cx="60" cy="102" r="6" ${S}/><path d="M76 60h14l6 24" ${S}/>`,
+  shock: `<path d="M60 10v14M48 24h24v14H48zM60 38v8" ${S}/><path d="M40 50l40 6-40 6 40 6-40 6 40 6-40 6 40 6" ${S}/><rect x="52" y="92" width="16" height="16" rx="3" ${S}/>`,
+  pads: `<path d="M24 82c6-30 28-48 52-50l2 14c-18 2-34 16-38 38z" ${S}/><path d="M48 92c6-30 28-48 52-50l2 14c-18 2-34 16-38 38z" ${S}/>`,
+  belt: `<rect x="18" y="26" width="84" height="68" rx="34" ${S}/><rect x="28" y="36" width="64" height="48" rx="24" ${S}/><circle cx="84" cy="60" r="8" ${S}/><path d="M30 30l-4-4M44 24v-6M60 24v-6M76 24v-6M92 30l4-4" ${S}/>`,
+  alternator: `<circle cx="60" cy="62" r="34" ${S}/><circle cx="60" cy="62" r="12" ${S}/><path d="M60 28v-12M38 36l-8-8M82 36l8-8M28 62H16M92 62h12" ${S}/><path d="M48 62h24" ${S}/>`,
+  radiator: `<rect x="18" y="28" width="84" height="64" rx="4" ${S}/><path d="M30 36v48M42 36v48M54 36v48M66 36v48M78 36v48M90 36v48" ${S}/><path d="M60 28v-10h14" ${S}/>`,
+  headlight: `<path d="M16 72c0-26 22-44 52-44h36v56H40c-14 0-24-4-24-12z" ${S}/><circle cx="56" cy="58" r="14" ${S}/><path d="M84 40v32" ${S}/>`,
+  coil: `<rect x="40" y="18" width="40" height="22" rx="4" ${S}/><path d="M48 40v44h24V40M52 84v14h16V84M60 98v8" ${S}/><path d="M48 54h24M48 66h24" ${S}/>`
+};
+const CAT_ICON = {
+  motor: `<rect x="7" y="4" width="10" height="9" rx="2"/><path d="M12 13v4M9 20h6M12 17l-2 3M12 17l2 3"/>`,
+  suspension: `<path d="M12 2v3M7 5h10M7 8l10 2-10 2 10 2-10 2 10 2M12 18v4"/>`,
+  frenos: `<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/><path d="M16 5a8 8 0 0 1 3 5"/>`,
+  electrico: `<path d="M13 2 5 14h6l-1 8 8-12h-6z"/>`,
+  accesorios: `<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.5"/><path d="M3.5 10h6M14.5 10h6M12 14.5V21"/>`,
+  carroceria: `<path d="M3 15h18v-3l-3-5H8l-3 5H3z"/><circle cx="7.5" cy="16.5" r="2"/><circle cx="16.5" cy="16.5" r="2"/>`
+};
+
+// ---- Formatting ------------------------------------------------------------
+const fmtVES = n => 'Bs. ' + n.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const REP_LABEL = { 1: 'Reputación baja', 2: 'Reputación regular', 3: 'Buena reputación', 4: 'Muy buena reputación', 5: 'Excelente reputación' };
+
+function priceHTML(usd) {
+  const [int, cents] = usd.toFixed(2).split('.');
+  return `<span class="text-[15px] align-top mr-0.5">US$</span><span class="text-[28px] leading-none font-medium">${Number(int).toLocaleString('es-VE')}</span>${cents !== '00' ? `<sup class="text-[14px] ml-0.5">${cents}</sup>` : ''}`;
+}
+
+function cardHTML(l) {
+  const ves = fmtVES(Math.round(l.usd * RATE * 100) / 100);
+  const [b, m, y1, y2] = l.fits;
+  const segs = [1,2,3,4,5].map(i => `<span style="${i === l.rep ? `background:var(--rep-${i});height:9px` : ''}"></span>`).join('');
+  return `
+  <article class="card sheet overflow-hidden flex flex-row min-[560px]:flex-col">
+    <div class="drawing bg-soft shrink-0 w-[38%] min-[560px]:w-full aspect-square min-[560px]:aspect-[4/3] grid place-items-center relative">
+      <svg viewBox="0 0 120 120" class="w-[70%] h-[70%] min-[560px]:w-[58%] min-[560px]:h-[58%]" role="img" aria-label="Ilustración: ${l.title}">${ART[l.art]}</svg>
+      <button class="fav btn-press absolute top-2 right-2 w-9 h-9 rounded-full bg-surface text-link grid place-items-center" aria-pressed="false" aria-label="Agregar a favoritos" data-id="${l.id}">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg>
+      </button>
+    </div>
+    <div class="flex flex-col gap-2 p-4 min-w-0 flex-1 border-l min-[560px]:border-l-0 min-[560px]:border-t border-line">
+      <div class="flex items-center gap-2 text-[13px]">
+        <span class="px-2 py-0.5 rounded font-semibold ${l.cond === 'Nuevo' ? 'bg-soft text-ink' : 'bg-soft text-muted'}">${l.cond}</span>
+        <span class="text-muted num">${l.sold} vendidos</span>
+      </div>
+      <h3 class="text-[15px] leading-snug font-normal">${l.title}</h3>
+      <p class="text-[13px] text-muted">${b} ${m} ${y1}–${y2}</p>
+      <div class="num mt-1">
+        <p class="text-ink">${priceHTML(l.usd)}</p>
+        <p class="text-[13px] text-muted">≈ ${ves}</p>
+      </div>
+      <p class="text-[13px] text-ok font-semibold">Envío nacional por ${l.ship}</p>
+      <div class="flex items-center gap-1.5 text-[13px] text-muted">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>
+        ${l.city}
+      </div>
+      <div class="flex flex-col gap-1 mt-auto pt-2">
+        <div class="rep flex items-center gap-1" role="img" aria-label="${REP_LABEL[l.rep]}, ${l.rep} de 5">${segs}</div>
+        <p class="text-[12px] text-muted">${REP_LABEL[l.rep]}</p>
+      </div>
+      <button class="buy btn-press mt-2 h-10 rounded-md bg-navy text-navyink font-semibold text-[14px] hover:opacity-90" data-id="${l.id}">Contactar al vendedor</button>
+    </div>
+  </article>`;
+}
+
+// ---- State & rendering -----------------------------------------------------
+const state = { q: '', cat: null, brand: '', model: '', year: '' };
+const $ = id => document.getElementById(id);
+const norm = s => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+
+function matches(l) {
+  const [b, m, y1, y2] = l.fits;
+  if (state.cat && l.cat !== state.cat) return false;
+  if (state.brand && b !== state.brand) return false;
+  if (state.model && m !== state.model) return false;
+  if (state.year && (state.year < y1 || state.year > y2)) return false;
+  if (state.q) {
+    const hay = norm(`${l.title} ${b} ${m} ${l.city} ${l.cond}`);
+    if (!norm(state.q).split(/\s+/).filter(Boolean).every(w => hay.includes(w))) return false;
+  }
+  return true;
+}
+
+function render() {
+  const list = LISTINGS.filter(matches);
+  $('grid').innerHTML = list.map(cardHTML).join('');
+  $('empty').hidden = list.length > 0;
+  const parts = [];
+  if (state.q) parts.push(`“${state.q}”`);
+  if (state.cat) parts.push(CATEGORIES.find(c => c.id === state.cat).label);
+  if (state.brand) parts.push([state.brand, state.model, state.year].filter(Boolean).join(' '));
+  $('filterLine').textContent = parts.length
+    ? `${list.length} ${list.length === 1 ? 'publicación' : 'publicaciones'} para ${parts.join(' · ')}`
+    : `${list.length} publicaciones de vendedores en todo el país`;
+  $('finderReset').hidden = !state.brand;
+  document.querySelectorAll('#cats button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.cat === state.cat)));
+  document.querySelectorAll('#grid .fav').forEach(btn => { if (favs.has(+btn.dataset.id)) setFav(btn, true); });
+}
+
+// categories
+$('cats').innerHTML = CATEGORIES.map(c => `
+  <button data-cat="${c.id}" aria-pressed="false" class="btn-press shrink-0 flex items-center gap-2 px-3 py-2 rounded-md text-[14px] text-ink hover:bg-soft aria-[pressed=true]:bg-soft aria-[pressed=true]:font-semibold aria-[pressed=true]:shadow-[inset_0_-2px_0_var(--navy)]">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${CAT_ICON[c.id]}</svg>
+    ${c.label}
+  </button>`).join('');
+$('cats').addEventListener('click', e => {
+  const b = e.target.closest('button[data-cat]'); if (!b) return;
+  state.cat = state.cat === b.dataset.cat ? null : b.dataset.cat;
+  render();
+});
+
+// search
+$('searchForm').addEventListener('submit', e => { e.preventDefault(); state.q = $('q').value.trim(); render(); $('gridTitle').scrollIntoView({ behavior: 'smooth', block: 'start' }); });
+$('q').addEventListener('input', e => { if (!e.target.value) { state.q = ''; render(); } });
+
+// vehicle finder
+const opt = (v, t) => `<option value="${v}">${t}</option>`;
+$('brand').innerHTML = opt('', 'Todas las marcas') + Object.keys(VEHICLES).map(b => opt(b, b)).join('');
+function fillModels() {
+  const b = $('brand').value;
+  $('model').disabled = !b;
+  $('model').innerHTML = opt('', b ? 'Todos los modelos' : 'Elige una marca') + (b ? Object.keys(VEHICLES[b]).map(m => opt(m, m)).join('') : '');
+  fillYears();
+}
+function fillYears() {
+  const b = $('brand').value, m = $('model').value;
+  $('year').disabled = !m;
+  let years = '';
+  if (m) { const [a, z] = VEHICLES[b][m]; for (let y = z; y >= a; y--) years += opt(y, y); }
+  $('year').innerHTML = opt('', m ? 'Todos los años' : 'Elige un modelo') + years;
+}
+$('brand').addEventListener('change', fillModels);
+$('model').addEventListener('change', fillYears);
+$('finder').addEventListener('submit', e => {
+  e.preventDefault();
+  state.brand = $('brand').value; state.model = $('model').value; state.year = +$('year').value || '';
+  render();
+  $('gridTitle').scrollIntoView({ behavior: 'smooth', block: 'start' });
+});
+function resetFinder() { $('brand').value = ''; fillModels(); state.brand = state.model = state.year = ''; }
+$('finderReset').addEventListener('click', () => { resetFinder(); render(); });
+$('clearAll').addEventListener('click', () => { resetFinder(); state.q = ''; state.cat = null; $('q').value = ''; render(); });
+fillModels();
+
+// favourites & contact
+const favs = new Set();
+function setFav(btn, on) {
+  btn.setAttribute('aria-pressed', String(on));
+  btn.setAttribute('aria-label', on ? 'Quitar de favoritos' : 'Agregar a favoritos');
+  btn.querySelector('path').setAttribute('fill', on ? 'currentColor' : 'none');
+}
+$('grid').addEventListener('click', e => {
+  const fav = e.target.closest('.fav');
+  if (fav) {
+    const id = +fav.dataset.id, on = !favs.has(id);
+    on ? favs.add(id) : favs.delete(id);
+    setFav(fav, on);
+    toast(on ? 'Guardado en favoritos.' : 'Quitado de favoritos.');
+    return;
+  }
+  const buy = e.target.closest('.buy');
+  if (buy) {
+    const l = LISTINGS.find(x => x.id === +buy.dataset.id);
+    toast(`Simulación: se abriría el chat con el vendedor de “${l.title}” en ${l.city}.`);
+  }
+});
+
+// payments
+const payChip = p => `<li class="px-3 py-2 rounded-md bg-soft text-ink text-[14px] font-semibold">${p}</li>`;
+$('payStrip').innerHTML = PAYMENTS.map(payChip).join('');
+$('payHero').innerHTML = PAYMENTS.map(p => `<li class="px-3 py-3 rounded-md bg-surface text-ink">${p}</li>`).join('');
+$('payFooter').textContent = PAYMENTS.join(', ') + '.';
+$('rateNote').textContent = `Tasa referencial simulada: US$ 1 = ${fmtVES(RATE)} · ${RATE_DATE}`;
+
+// carousel
+const slides = [...document.querySelectorAll('#slides .slide')];
+let cur = 0, timer;
+$('dots').innerHTML = slides.map((_, i) => `<button class="w-2.5 h-2.5 rounded-full bg-surface" style="opacity:${i ? .4 : 1}" aria-label="Ir a la diapositiva ${i + 1}" data-i="${i}"></button>`).join('');
+function show(i) {
+  cur = (i + slides.length) % slides.length;
+  slides.forEach((s, k) => s.classList.toggle('is-on', k === cur));
+  [...$('dots').children].forEach((d, k) => { d.style.opacity = k === cur ? 1 : .4; d.setAttribute('aria-current', String(k === cur)); });
+}
+function auto() {
+  clearInterval(timer);
+  if (!matchMedia('(prefers-reduced-motion: reduce)').matches) timer = setInterval(() => show(cur + 1), 7000);
+}
+$('prev').addEventListener('click', () => { show(cur - 1); auto(); });
+$('next').addEventListener('click', () => { show(cur + 1); auto(); });
+$('dots').addEventListener('click', e => { const d = e.target.closest('[data-i]'); if (d) { show(+d.dataset.i); auto(); } });
+auto();
+
+// toast (simulated alerts; the viewer blocks alert())
+let tt;
+function toast(msg) {
+  const t = $('toast');
+  t.textContent = msg;
+  t.classList.remove('opacity-0', 'translate-y-2');
+  clearTimeout(tt);
+  tt = setTimeout(() => t.classList.add('opacity-0', 'translate-y-2'), 3200);
+}
+document.addEventListener('click', e => { const b = e.target.closest('[data-toast]'); if (b) toast(b.dataset.toast); });
+
+render();
+</script>
