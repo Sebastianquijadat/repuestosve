@@ -65,12 +65,14 @@
   .card:hover { box-shadow: 0 6px 20px rgba(0,0,0,.10); }
   .btn-press:active { transform: translateY(1px); }
   .drawing { color: var(--drawing); }
+  .photo img { transition: transform .25s ease; }
+  .card:hover .photo img.object-cover { transform: scale(1.03); }
   .rep span { height: 6px; flex: 1; border-radius: 2px; background: var(--rep-off); }
   .slide { display: none; }
   .slide.is-on { display: grid; }
   select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%2363676e' stroke-width='1.6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; }
   #toast { bottom: calc(16px + env(safe-area-inset-bottom, 0px)); }
-  @media (prefers-reduced-motion: reduce) { .card, .btn-press, #toast { transition: none !important; } }
+  @media (prefers-reduced-motion: reduce) { .card, .btn-press, #toast, .photo img { transition: none !important; } .card:hover .photo img { transform: none; } }
 </style>
 
 <!-- Frame: the yellow top bar -->
@@ -257,6 +259,11 @@
       <p class="text-muted">Envíos por MRW, Zoom y Tealca.</p>
     </div>
   </div>
+  <div class="wrap border-t border-line pt-6 pb-6 flex flex-col gap-2 text-[13px] text-muted">
+    <h3 class="font-semibold text-ink text-[14px]">Créditos de las fotos</h3>
+    <p class="max-w-[46rem] leading-relaxed">Fotos reales de Wikimedia Commons, recortadas para las tarjetas. Las publicaciones, precios y vendedores son de ejemplo.</p>
+    <ul id="credits" class="grid gap-x-6 gap-y-1 sm:grid-cols-2 lg:grid-cols-4"></ul>
+  </div>
   <div class="wrap pb-8 text-[13px] text-muted">© 2026 RepuestosVE · Prototipo con datos de ejemplo.</div>
 </footer>
 
@@ -288,16 +295,27 @@ const CATEGORIES = [
 ];
 
 // fits: [marca, modelo, desde, hasta]; rep: 1 (rojo) a 5 (verde)
+// photo: archivo publicado junto a la página. fit 'cover' llena la tarjeta; 'contain' muestra la pieza completa.
+// Fotos reales de Wikimedia Commons; by/lic/url son el crédito que exige cada licencia.
 const LISTINGS = [
-  { id: 1, title: 'Bomba de gasolina Chevrolet Aveo 1.6 con flotante', usd: 48, cond: 'Nuevo', city: 'Caracas', rep: 5, sold: 214, cat: 'motor', art: 'pump', fits: ['Chevrolet', 'Aveo', 2005, 2017], ship: 'MRW' },
-  { id: 2, title: 'Amortiguadores delanteros Toyota Corolla (par)', usd: 95, cond: 'Nuevo', city: 'Valencia', rep: 4, sold: 87, cat: 'suspension', art: 'shock', fits: ['Toyota', 'Corolla', 2009, 2014], ship: 'Zoom' },
-  { id: 3, title: 'Pastillas de freno delanteras Ford Fiesta Power y Max', usd: 18.5, cond: 'Nuevo', city: 'Barquisimeto', rep: 5, sold: 402, cat: 'frenos', art: 'pads', fits: ['Ford', 'Fiesta', 2004, 2014], ship: 'MRW' },
-  { id: 4, title: 'Kit correa de tiempo Chery Orinoco 1.8 con tensor', usd: 62, cond: 'Nuevo', city: 'Maracaibo', rep: 3, sold: 41, cat: 'motor', art: 'belt', fits: ['Chery', 'Orinoco', 2011, 2016], ship: 'Tealca' },
-  { id: 5, title: 'Alternador Toyota Hilux 2.7 probado en banco', usd: 140, cond: 'Usado', city: 'Puerto Ordaz', rep: 4, sold: 19, cat: 'electrico', art: 'alternator', fits: ['Toyota', 'Hilux', 2005, 2015], ship: 'Zoom' },
-  { id: 6, title: 'Radiador Chevrolet Optra 1.8 sincrónico', usd: 85, cond: 'Nuevo', city: 'Maracay', rep: 2, sold: 8, cat: 'motor', art: 'radiator', fits: ['Chevrolet', 'Optra', 2006, 2012], ship: 'MRW' },
-  { id: 7, title: 'Faro delantero izquierdo Ford Explorer', usd: 70, cond: 'Usado', city: 'Caracas', rep: 5, sold: 63, cat: 'carroceria', art: 'headlight', fits: ['Ford', 'Explorer', 2006, 2010], ship: 'Tealca' },
-  { id: 8, title: 'Bobina de encendido Mitsubishi Lancer 2.0', usd: 35, cond: 'Nuevo', city: 'Valencia', rep: 4, sold: 128, cat: 'electrico', art: 'coil', fits: ['Mitsubishi', 'Lancer', 2008, 2015], ship: 'Zoom' }
+  { id: 1, title: 'Pila de gasolina Chevrolet Aveo 1.6, bomba eléctrica 12 V', usd: 48, cond: 'Nuevo', city: 'Caracas', rep: 5, sold: 214, cat: 'motor', art: 'pump', fits: ['Chevrolet', 'Aveo', 2005, 2017], ship: 'MRW',
+    photo: { src: 'img/bomba-gasolina.webp', w: 720, h: 720, fit: 'contain', by: 'Raimond Spekking', lic: 'CC BY-SA 4.0', url: 'https://commons.wikimedia.org/wiki/File:Bosch_Fuel_Pump_0_580_254_957-92468.jpg' } },
+  { id: 2, title: 'Amortiguadores delanteros Toyota Corolla (par)', usd: 95, cond: 'Nuevo', city: 'Valencia', rep: 4, sold: 87, cat: 'suspension', art: 'shock', fits: ['Toyota', 'Corolla', 2009, 2014], ship: 'Zoom',
+    photo: { src: 'img/amortiguadores.webp', w: 613, h: 760, fit: 'contain', by: 'Cav', lic: 'Dominio público', url: 'https://commons.wikimedia.org/wiki/File:Ammortizzatore_500_esteso.jpg' } },
+  { id: 3, title: 'Pastillas de freno delanteras Ford Fiesta Power y Max', usd: 18.5, cond: 'Nuevo', city: 'Barquisimeto', rep: 5, sold: 402, cat: 'frenos', art: 'pads', fits: ['Ford', 'Fiesta', 2004, 2014], ship: 'MRW',
+    photo: { src: 'img/pastillas-freno.webp', w: 800, h: 600, fit: 'cover', pos: '40% 30%', by: 'Amm105', lic: 'CC BY-SA 3.0', url: 'https://commons.wikimedia.org/wiki/File:Brake_pads.JPG' } },
+  { id: 4, title: 'Kit correa de tiempo Chery Orinoco 1.8 con tensor', usd: 62, cond: 'Nuevo', city: 'Maracaibo', rep: 3, sold: 41, cat: 'motor', art: 'belt', fits: ['Chery', 'Orinoco', 2011, 2016], ship: 'Tealca',
+    photo: { src: 'img/kit-correa.webp', w: 800, h: 600, fit: 'cover', by: 'A7N8X', lic: 'CC BY-SA 4.0', url: 'https://commons.wikimedia.org/wiki/File:Cinghia_di_distribuzione.jpg' } },
+  { id: 5, title: 'Alternador Toyota Hilux 2.7 probado en banco', usd: 140, cond: 'Usado', city: 'Puerto Ordaz', rep: 4, sold: 19, cat: 'electrico', art: 'alternator', fits: ['Toyota', 'Hilux', 2005, 2015], ship: 'Zoom',
+    photo: { src: 'img/alternador.webp', w: 800, h: 600, fit: 'cover', by: 'EL Guarito', lic: 'CC BY-SA 3.0', url: 'https://commons.wikimedia.org/wiki/File:Alternador_003.jpg' } },
+  { id: 6, title: 'Radiador de aluminio Chevrolet Optra 1.8 sincrónico', usd: 85, cond: 'Nuevo', city: 'Maracay', rep: 2, sold: 8, cat: 'motor', art: 'radiator', fits: ['Chevrolet', 'Optra', 2006, 2012], ship: 'MRW',
+    photo: { src: 'img/radiador.webp', w: 800, h: 600, fit: 'cover', by: 'autor no indicado', lic: 'Dominio público', url: 'https://commons.wikimedia.org/wiki/File:Automobile_radiator.jpg' } },
+  { id: 7, title: 'Faro delantero derecho Ford Explorer proyector HID', usd: 70, cond: 'Usado', city: 'Caracas', rep: 5, sold: 63, cat: 'carroceria', art: 'headlight', fits: ['Ford', 'Explorer', 2011, 2015], ship: 'Tealca',
+    photo: { src: 'img/faro-explorer.webp', w: 798, h: 598, fit: 'cover', by: 'Michael Sheehan', lic: 'CC BY 2.0', url: 'https://commons.wikimedia.org/wiki/File:Front_HID_Projector_Headlights_of_2011_Ford_Explorer_(6615640465).jpg' } },
+  { id: 8, title: 'Bobina de encendido tipo lápiz Mitsubishi Lancer 2.0', usd: 35, cond: 'Nuevo', city: 'Valencia', rep: 4, sold: 128, cat: 'electrico', art: 'coil', fits: ['Mitsubishi', 'Lancer', 2008, 2015], ship: 'Zoom',
+    photo: { src: 'img/bobina.webp', w: 450, h: 777, fit: 'contain', by: 'Halpaugh', lic: 'CC BY-SA 3.0', url: 'https://commons.wikimedia.org/wiki/File:Hondacoilpack.jpg' } }
 ];
+console.assert(LISTINGS.every(l => l.photo && l.photo.src && l.photo.by && l.photo.lic), 'Cada publicación tiene foto y crédito');
 console.assert(LISTINGS.every(l => VEHICLES[l.fits[0]] && VEHICLES[l.fits[0]][l.fits[1]]), 'Cada publicación usa un vehículo del selector');
 
 // ---- Drawings (flat line art, one language) --------------------------------
@@ -330,14 +348,21 @@ function priceHTML(usd) {
   return `<span class="text-[15px] align-top mr-0.5">US$</span><span class="text-[28px] leading-none font-medium">${Number(int).toLocaleString('es-VE')}</span>${cents !== '00' ? `<sup class="text-[14px] ml-0.5">${cents}</sup>` : ''}`;
 }
 
-function cardHTML(l) {
+function drawingHTML(l) {
+  return `<svg viewBox="0 0 120 120" class="drawing w-[70%] h-[70%] min-[560px]:w-[58%] min-[560px]:h-[58%]" role="img" aria-label="Ilustración: ${l.title}">${ART[l.art]}</svg>`;
+}
+
+function cardHTML(l, i) {
   const ves = fmtVES(Math.round(l.usd * RATE * 100) / 100);
   const [b, m, y1, y2] = l.fits;
+  const p = l.photo;
   const segs = [1,2,3,4,5].map(i => `<span style="${i === l.rep ? `background:var(--rep-${i});height:9px` : ''}"></span>`).join('');
   return `
   <article class="card sheet overflow-hidden flex flex-row min-[560px]:flex-col">
-    <div class="drawing bg-soft shrink-0 w-[38%] min-[560px]:w-full aspect-square min-[560px]:aspect-[4/3] grid place-items-center relative">
-      <svg viewBox="0 0 120 120" class="w-[70%] h-[70%] min-[560px]:w-[58%] min-[560px]:h-[58%]" role="img" aria-label="Ilustración: ${l.title}">${ART[l.art]}</svg>
+    <div class="photo bg-soft shrink-0 w-[38%] min-[560px]:w-full aspect-square min-[560px]:aspect-[4/3] grid place-items-center relative overflow-hidden">
+      <img src="${p.src}" width="${p.w}" height="${p.h}" alt="Foto de ${l.title}" data-id="${l.id}"
+        loading="${i < 4 ? 'eager' : 'lazy'}" decoding="async"
+        class="absolute inset-0 w-full h-full ${p.fit === 'contain' ? 'object-contain' : 'object-cover'}" style="object-position:${p.pos || '50% 50%'}">
       <button class="fav btn-press absolute top-2 right-2 w-9 h-9 rounded-full bg-surface text-link grid place-items-center" aria-pressed="false" aria-label="Agregar a favoritos" data-id="${l.id}">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg>
       </button>
@@ -468,6 +493,19 @@ $('grid').addEventListener('click', e => {
     toast(`Simulación: se abriría el chat con el vendedor de “${l.title}” en ${l.city}.`);
   }
 });
+
+// if a photo fails to load, fall back to the line drawing for that part
+$('grid').addEventListener('error', e => {
+  const img = e.target;
+  if (img.tagName !== 'IMG') return;
+  const l = LISTINGS.find(x => x.id === +img.dataset.id);
+  if (l) img.outerHTML = drawingHTML(l);
+}, true);
+
+// photo credits (required by the CC BY and CC BY-SA licences)
+const PART = { 1: 'Pila de gasolina', 2: 'Amortiguadores', 3: 'Pastillas de freno', 4: 'Kit de correa', 5: 'Alternador', 6: 'Radiador', 7: 'Faro', 8: 'Bobina' };
+$('credits').innerHTML = LISTINGS.map(l => `
+  <li><span class="text-ink">${PART[l.id]}</span>: <a class="text-link hover:underline" href="${l.photo.url}" target="_blank" rel="noopener">${l.photo.by}</a>, ${l.photo.lic}</li>`).join('');
 
 // payments
 const payChip = p => `<li class="px-3 py-2 rounded-md bg-soft text-ink text-[14px] font-semibold">${p}</li>`;
